@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>My e-Commerce Store</title>
+</head>
+<body th:object="${cart}">
+    <h1>My e-Commerce Store</h1>
+    <form
+        action="#"
+        th:action="@{/cart}"
+        method="post"
+    >
+    <p>
+        Username:
+        <input type="text" th:field="*{username}" />
+    </p>
+    <p>
+        Item:
+        <input type="text" th:field="*{itemName}" />
+        Price:
+        <input type="text" th:field="*{price}" />
+        <input type="submit" value="Add"/>
+    </p>
+    </form>
+    <hr>
+    <h1>Your shopping cart items</h1>
+    <ul th:each="cartItem : *{cartItems}">
+        
+       <li th:text="${cartItem.quantity} +  ' x ' + ${cartItem.desc} 
+            + ' [' + ${#numbers.formatDecimal(cartItem.price, 1, 'DEFAULT', 2, 'DEFAULT')} + ']'"></li>
+       <input type="button" value="Delete"/>
+       <input type="button" value="Edit"/>
+       <input type="button" value="Sort Up"/>
+       
+    </ul>
+</body>
+</html>
