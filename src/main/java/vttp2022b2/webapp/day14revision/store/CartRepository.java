@@ -64,25 +64,22 @@ public class CartRepository {
         contents.add(item);
     }
 
-    public void delete(String cartId, String username) {
+    public void delete(String cartId, Cart c) {
         int index = 0;
         logger.info(" cartid " + cartId);
-        logger.info(" contents " + contents.size());
-        for (CartItem item : contents) {
+        logger.info(" contents " + c.getCartItems().size());
+        CopyOnWriteArrayList<CartItem> contentsDel = c.getCartItems();
+        for (CartItem item : contentsDel) {
             logger.info(" item.getId() " + item.getId());
             if (item.getId().equals(cartId)) {
                 logger.info("Delete cartid " + cartId);
-                contents.remove(index);
+                contentsDel.remove(index);
                 break;
             }
             index++;
         }
-        Cart c = new Cart(username);
-        // for (CartItem item : contents) {
-        // logger.info(item.getDesc());
-        // }
-        c.setCartItems(contents);
-        this.save(c, true);
+        c.setCartItems(contentsDel);
+        this.save(c, false);
     }
 
     public void load(InputStream is) throws IOException {

@@ -84,6 +84,7 @@ public class Cart {
                 item.setDesc(cartItemArr[0]);
                 item.setQuantity(Integer.parseInt(cartItemArr[1]));
                 item.setPrice(BigDecimal.valueOf(Long.parseLong(cartItemArr[2])));
+                item.setId(cartItemArr[3]);
                 cartItems.add(item);
             }
 

@@ -35,30 +35,16 @@
         class="deleteCart"
         value="Delete"
       />
-      <input
-        type="hidden"
-        th:value="${cartItem.id}"
-        id="h_cartId"
-        name="cartId"
-      />
-      <input type="button" value="Edit" />
-      <input type="button" value="Sort Up" />
+      <a
+        th:href="@{/cart/edit/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
+        >Edit</a
+      >
+      <a
+        th:href="@{/cart/delete/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
+        >Delete</a
+      >
+      <a th:href="@{/cart/sortUp} + '?username=' + *{username}">Sort Up</a>
     </ul>
   </body>
 </html>
-<script>
-  $(document).on("click", ".deleteCart", function (e) {
-    //you want to start with blocking the default behavior:
-    e.preventDefault();
-    var cartId = $("#h_cartId").attr("value");
-    var username = $("#username").attr("value");
-    console.log(cartId);
-    $.ajax({
-      url: "/cart/" + cartId + "?username=" + username,
-      type: "DELETE",
-      success: function (result) {
-        // Do something with the result
-      },
-    });
-  });
-</script>
+<script></script>

@@ -43,9 +43,11 @@ public class ShoppingCartController {
      * @return
      */
     @GetMapping
-    public String showShoppingCartForm(Model model) {
-        Cart c = new Cart("");
-        model.addAttribute("cart", c);
+    public String showAllCart(Model model, @RequestParam String username) {
+        repo.setUsername(username);
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        Cart currCart = repo.load();
+        model.addAttribute("cart", currCart);
         return "shoppingcart";
     }
 
@@ -63,6 +65,14 @@ public class ShoppingCartController {
         List<String> checkDuplicatesOfItem = new ArrayList<>();
         if (cart.getUsername().equals("")) {
             throw new IOException("Username is mandatory");
+        }
+
+        if (cart.getItemName().equals("")) {
+            throw new IOException("Item name is mandatory");
+        }
+
+        if (cart.getPrice().equals("")) {
+            throw new IOException("Price is mandatory");
         }
         repo.setUsername(cart.getUsername());
         repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
@@ -111,11 +121,12 @@ public class ShoppingCartController {
         }
         logger.info("new cart item size: " + (cart.getCartItems().size()));
         repo.save(cart);
-        model.addAttribute("cart", cart);
+        Cart newCart = repo.load();
+        model.addAttribute("cart", newCart);
         return "shoppingcart";
     }
 
-    @DeleteMapping("{cartId}")
+    @GetMapping("/delete/{cartId}")
     public String deleteCartItem(@ModelAttribute Cart cart, Model model,
             @PathVariable String cartId,
             @RequestParam String username) {
@@ -123,8 +134,8 @@ public class ShoppingCartController {
         logger.info("delete cart item : " + username);
         repo.setUsername(cart.getUsername());
         repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
-        this.repo.load();
-        this.repo.delete(cartId, username);
+        Cart c = this.repo.load();
+        this.repo.delete(cartId, c);
         Cart newCart = repo.load();
         model.addAttribute("cart", newCart);
         return "shoppingcart";
