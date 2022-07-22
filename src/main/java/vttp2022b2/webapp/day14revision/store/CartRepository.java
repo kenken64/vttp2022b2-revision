@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import vttp2022b2.webapp.day14revision.model.Cart;
 import vttp2022b2.webapp.day14revision.model.CartItem;
+import static vttp2022b2.webapp.day14revision.util.IOUtil.*;
 
 @Component(value = "cartRepo")
 public class CartRepository {
@@ -63,10 +64,25 @@ public class CartRepository {
         contents.add(item);
     }
 
-    public CartItem delete(int index) {
-        if (index < contents.size())
-            return contents.remove(index);
-        return new CartItem();
+    public void delete(String cartId, String username) {
+        int index = 0;
+        logger.info(" cartid " + cartId);
+        logger.info(" contents " + contents.size());
+        for (CartItem item : contents) {
+            logger.info(" item.getId() " + item.getId());
+            if (item.getId().equals(cartId)) {
+                logger.info("Delete cartid " + cartId);
+                contents.remove(index);
+                break;
+            }
+            index++;
+        }
+        Cart c = new Cart(username);
+        // for (CartItem item : contents) {
+        // logger.info(item.getDesc());
+        // }
+        c.setCartItems(contents);
+        this.save(c, true);
     }
 
     public void load(InputStream is) throws IOException {
@@ -81,6 +97,7 @@ public class CartRepository {
                 i.setDesc(itemStrArr[0]);
                 i.setQuantity(Integer.parseInt(itemStrArr[1]));
                 i.setPrice(new BigDecimal(itemStrArr[2]));
+                i.setId(itemStrArr[3]);
                 contents.add(i);
             }
         }
@@ -92,6 +109,9 @@ public class CartRepository {
     public synchronized Cart load() {
         String cartName = this.username + ".cart";
         Cart cart = new Cart(this.username);
+        if (fileRepository.listFiles() == null) {
+            createDir(fileRepository.getPath());
+        }
         for (File cartFile : fileRepository.listFiles())
             if (cartFile.getName().equals(cartName)) {
                 try {
@@ -113,7 +133,8 @@ public class CartRepository {
             logger.info(item.getDesc());
             logger.info("" + item.getQuantity());
             logger.info("" + item.getPrice());
-            bw.write(item.getDesc() + "," + item.getQuantity() + "," + item.getPrice() + "\n");
+            bw.write(item.getDesc() + "," + item.getQuantity() + ","
+                    + item.getPrice() + "," + item.getId() + "\n");
         }
         ows.flush();
         bw.flush();
@@ -121,7 +142,11 @@ public class CartRepository {
         ows.close();
     }
 
-    public void save(Cart cart) {
+    public synchronized void save(Cart cart) {
+        this.save(cart, false);
+    }
+
+    public synchronized void save(Cart cart, boolean isDel) {
         String cartName = cart.getUsername() + ".cart";
         String saveLocation = fileRepository.getPath() + File.separator + cartName;
         File saveFile = new File(saveLocation);
@@ -133,7 +158,12 @@ public class CartRepository {
                 saveFile.createNewFile();
             }
 
-            os = new FileOutputStream(saveLocation, true);
+            if (isDel) {
+                os = new FileOutputStream(saveLocation, true);
+            } else {
+                os = new FileOutputStream(saveLocation, false);
+            }
+
             this.save(os, cart.getCartItems());
             os.flush();
             os.close();

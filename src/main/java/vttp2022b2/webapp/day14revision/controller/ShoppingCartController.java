@@ -2,6 +2,7 @@ package vttp2022b2.webapp.day14revision.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -12,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import vttp2022b2.webapp.day14revision.model.Cart;
 import vttp2022b2.webapp.day14revision.model.CartItem;
@@ -32,6 +36,12 @@ public class ShoppingCartController {
     @Autowired
     CartRepository repo;
 
+    /**
+     * Show the cart form
+     * 
+     * @param model
+     * @return
+     */
     @GetMapping
     public String showShoppingCartForm(Model model) {
         Cart c = new Cart("");
@@ -40,6 +50,8 @@ public class ShoppingCartController {
     }
 
     /**
+     * add new cart item to the cart data file.
+     * 
      * @param cart
      * @param model
      * @return
@@ -48,6 +60,7 @@ public class ShoppingCartController {
     @PostMapping
     public String addCartItem(@ModelAttribute Cart cart, Model model) throws IOException {
         logger.info("add Cart item ");
+        List<String> checkDuplicatesOfItem = new ArrayList<>();
         if (cart.getUsername().equals("")) {
             throw new IOException("Username is mandatory");
         }
@@ -55,35 +68,65 @@ public class ShoppingCartController {
         repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
         Cart currCart = repo.load();
         CopyOnWriteArrayList<CartItem> currentItemLst = currCart.getCartItems();
+        for (CartItem cartItem : currentItemLst) {
+            checkDuplicatesOfItem.add(cartItem.getDesc());
+        }
 
+        logger.info("currentItemLst size: " + (currentItemLst.size()));
         if (currentItemLst.size() > 0) {
+            int index = 0;
             for (CartItem cartItem : currentItemLst) {
+                logger.info("1 desc " + cartItem.getDesc());
+                logger.info("2 desc " + cart.getItemName());
                 if (cartItem.getDesc().equals(cart.getItemName())) {
                     CartItem i = new CartItem();
                     i.setDesc(cart.getItemName());
                     i.setPrice(cart.getPrice());
                     i.setQuantity(cartItem.getQuantity() + 1);
-                    currentItemLst.add(i);
+                    currentItemLst.set(index, i);
                     cart.setCartItems(currentItemLst);
                 } else {
+                    logger.info("2222 WHY HERE ! ");
                     CartItem i = new CartItem();
                     i.setDesc(cart.getItemName());
                     i.setPrice(cart.getPrice());
                     i.setQuantity(1);
-                    currentItemLst.add(i);
-                    cart.setCartItems(currentItemLst);
+                    if (!checkDuplicatesOfItem.contains(cart.getItemName())) {
+                        currentItemLst.add(i);
+                        checkDuplicatesOfItem.add(cart.getItemName());
+                        cart.setCartItems(currentItemLst);
+                    }
                 }
+                logger.info("Current index is: " + (index++));
             }
         } else {
+            logger.info("WHY HERE ! ");
             CartItem i = new CartItem();
             i.setDesc(cart.getItemName());
             i.setPrice(cart.getPrice());
             i.setQuantity(1);
             currentItemLst.add(i);
+            checkDuplicatesOfItem.add(cart.getItemName());
             cart.setCartItems(currentItemLst);
         }
+        logger.info("new cart item size: " + (cart.getCartItems().size()));
         repo.save(cart);
         model.addAttribute("cart", cart);
+        return "shoppingcart";
+    }
+
+    @DeleteMapping("{cartId}")
+    public String deleteCartItem(@ModelAttribute Cart cart, Model model,
+            @PathVariable String cartId,
+            @RequestParam String username) {
+        logger.info("delete cart item : " + cartId);
+        logger.info("delete cart item : " + username);
+        repo.setUsername(cart.getUsername());
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        this.repo.load();
+        this.repo.delete(cartId, username);
+        Cart newCart = repo.load();
+        model.addAttribute("cart", newCart);
         return "shoppingcart";
     }
 

@@ -1,40 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <title>My e-Commerce Store</title>
-</head>
-<body th:object="${cart}">
+  </head>
+  <body th:object="${cart}">
     <h1>My e-Commerce Store</h1>
-    <form
-        action="#"
-        th:action="@{/cart}"
-        method="post"
-    >
-    <p>
+    <form action="#" th:action="@{/cart}" method="post">
+      <p>
         Username:
-        <input type="text" th:field="*{username}" />
-    </p>
-    <p>
+        <input type="text" th:field="*{username}" id="username" />
+      </p>
+      <p>
         Item:
         <input type="text" th:field="*{itemName}" />
         Price:
         <input type="text" th:field="*{price}" />
-        <input type="submit" value="Add"/>
-    </p>
+        <input type="submit" value="Add" />
+      </p>
     </form>
-    <hr>
+    <hr />
     <h1>Your shopping cart items</h1>
     <ul th:each="cartItem : *{cartItems}">
-        
-       <li th:text="${cartItem.quantity} +  ' x ' + ${cartItem.desc} 
-            + ' [' + ${#numbers.formatDecimal(cartItem.price, 1, 'DEFAULT', 2, 'DEFAULT')} + ']'"></li>
-       <input type="button" value="Delete"/>
-       <input type="button" value="Edit"/>
-       <input type="button" value="Sort Up"/>
-       
+      <li
+        th:text="${cartItem.quantity} +  ' x ' + ${cartItem.desc} 
+            + ' [' + ${#numbers.formatDecimal(cartItem.price, 1, 'DEFAULT', 2, 'DEFAULT')} + ']'"
+      ></li>
+      <input
+        type="button"
+        name="delete-cart"
+        class="deleteCart"
+        value="Delete"
+      />
+      <input
+        type="hidden"
+        th:value="${cartItem.id}"
+        id="h_cartId"
+        name="cartId"
+      />
+      <input type="button" value="Edit" />
+      <input type="button" value="Sort Up" />
     </ul>
-</body>
+  </body>
 </html>
+<script>
+  $(document).on("click", ".deleteCart", function (e) {
+    //you want to start with blocking the default behavior:
+    e.preventDefault();
+    var cartId = $("#h_cartId").attr("value");
+    var username = $("#username").attr("value");
+    console.log(cartId);
+    $.ajax({
+      url: "/cart/" + cartId + "?username=" + username,
+      type: "DELETE",
+      success: function (result) {
+        // Do something with the result
+      },
+    });
+  });
+</script>
