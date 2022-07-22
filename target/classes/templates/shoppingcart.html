@@ -5,46 +5,117 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>My e-Commerce Store</title>
   </head>
   <body th:object="${cart}">
-    <h1>My e-Commerce Store</h1>
-    <form action="#" th:action="@{/cart}" method="post">
-      <p>
-        Username:
-        <input type="text" th:field="*{username}" id="username" />
-      </p>
-      <p>
-        Item:
-        <input type="text" th:field="*{itemName}" />
-        Price:
-        <input type="text" th:field="*{price}" />
-        <input type="submit" value="Add" />
-      </p>
+    <div class="md:flex md:items-center md:justify-between">
+      <div class="flex-1 min-w-0">
+        <h2
+          class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
+        >
+          My e-Commerce Store
+        </h2>
+      </div>
+    </div>
+
+    <form
+      class="space-y-8 divide-y divide-gray-200"
+      action="#"
+      th:action="@{/cart}"
+      method="post"
+    >
+      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+          <dl class="sm:divide-y sm:divide-gray-200">
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Username:</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <input
+                  type="text"
+                  th:field="*{username}"
+                  id="username"
+                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                />
+              </dd>
+            </div>
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Item:</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <input
+                  type="text"
+                  th:field="*{itemName}"
+                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                />
+              </dd>
+            </div>
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Price:</dt>
+              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <input
+                  type="text"
+                  th:field="*{price}"
+                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                /><br />
+                <button
+                  class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  type="submit"
+                  value="Add"
+                >
+                  Add
+                </button>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      <div
+        class="border border-gray-300 rounded-lg shadow-sm overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500"
+      >
+        <div class="flex-shrink-0"></div>
+      </div>
     </form>
     <hr />
-    <h1>Your shopping cart items</h1>
-    <ul th:each="cartItem : *{cartItems}">
-      <li
-        th:text="${cartItem.quantity} +  ' x ' + ${cartItem.desc} 
-            + ' [' + ${#numbers.formatDecimal(cartItem.price, 1, 'DEFAULT', 2, 'DEFAULT')} + ']'"
-      ></li>
-      <input
-        type="button"
-        name="delete-cart"
-        class="deleteCart"
-        value="Delete"
-      />
-      <a
-        th:href="@{/cart/edit/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
-        >Edit</a
+    <div class="grid place-items-center h-screen">
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+          <h2
+            class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
+          >
+            Your shopping cart items
+          </h2>
+        </div>
+      </div>
+
+      <ul
+        role="list"
+        class="w-48 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        th:each="cartItem : *{cartItems}"
       >
-      <a
-        th:href="@{/cart/delete/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
-        >Delete</a
-      >
-      <a th:href="@{/cart/sortUp} + '?username=' + *{username}">Sort Up</a>
-    </ul>
+        <li
+          class="py-2 px-4 w-full rounded-t-lg border-b border-gray-200 dark:border-gray-600"
+          th:text="${cartItem.quantity} +  ' x ' + ${cartItem.desc} 
+            + ' [$' + ${#numbers.formatDecimal(cartItem.price, 1, 'DEFAULT', 2, 'DEFAULT')} + ']'"
+        ></li>
+        <div class="grid place-items-left">
+          <a
+            th:href="@{/cart/edit/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
+            class="text-blue-500 underline"
+            >Edit</a
+          >
+          <a
+            th:href="@{/cart/delete/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
+            class="text-blue-500 underline"
+            >Delete</a
+          >
+          <a
+            th:href="@{/cart/sortUp} + '?username=' + *{username}"
+            class="text-blue-500 underline"
+            >Sort Up</a
+          >
+        </div>
+      </ul>
+    </div>
   </body>
 </html>
 <script></script>

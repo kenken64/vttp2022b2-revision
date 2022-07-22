@@ -3,4 +3,5 @@
 /home/kenneth/Projects/vttp2022b2-revision/src/main/java/vttp2022b2/webapp/day14revision/model/Cart.java
 /home/kenneth/Projects/vttp2022b2-revision/src/main/java/vttp2022b2/webapp/day14revision/controller/ShoppingCartController.java
 /home/kenneth/Projects/vttp2022b2-revision/src/main/java/vttp2022b2/webapp/day14revision/model/CartItem.java
+/home/kenneth/Projects/vttp2022b2-revision/src/main/java/vttp2022b2/webapp/day14revision/controller/IndexController.java
 /home/kenneth/Projects/vttp2022b2-revision/src/main/java/vttp2022b2/webapp/day14revision/store/CartRepository.java
