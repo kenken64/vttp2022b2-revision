@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      table td {
+        vertical-align: top;
+        border: solid 1px #888;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="md:flex md:items-center md:justify-between">
+      <div class="flex-1 min-w-0">
+        <h2
+          class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
+        >
+          An error has occurred
+        </h2>
+      </div>
+    </div>
+
+    <table class="table-auto">
+      <tr>
+        <td>Date</td>
+        <td th:text="${timestamp}" />
+      </tr>
+      <tr>
+        <td>Path</td>
+        <td th:text="${path}" />
+      </tr>
+      <tr>
+        <td>Error</td>
+        <td th:text="${error}" />
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td th:text="${status}" />
+      </tr>
+      <tr>
+        <td>Message</td>
+        <td th:text="${message}" />
+      </tr>
+      <tr>
+        <td>Exception</td>
+        <td th:text="${exception}" />
+      </tr>
+      <tr>
+        <td>Trace</td>
+        <td>
+          <pre th:text="${trace}" />
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

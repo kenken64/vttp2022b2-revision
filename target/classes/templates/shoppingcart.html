@@ -22,47 +22,60 @@
     <form
       class="space-y-8 divide-y divide-gray-200"
       action="#"
-      th:action="@{/cart}"
+      th:action="*{editCartId} == null ? @{/cart} : @{/cart/update}"
       method="post"
     >
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
           <dl class="sm:divide-y sm:divide-gray-200">
             <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Username:</dt>
+              <dt
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Username:
+              </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <input
                   type="text"
                   th:field="*{username}"
                   id="username"
-                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 />
               </dd>
             </div>
             <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Item:</dt>
+              <dt
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Item:
+              </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <input
                   type="text"
                   th:field="*{itemName}"
-                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 />
               </dd>
             </div>
             <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Price:</dt>
+              <dt
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+              >
+                Price:
+              </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <input
                   type="text"
                   th:field="*{price}"
-                  class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 /><br />
+                <input type="hidden" th:field="*{editCartId}" id="editCartId" />
                 <button
                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   type="submit"
                   value="Add"
                 >
-                  Add
+                  Save
                 </button>
               </dd>
             </div>
@@ -108,14 +121,25 @@
             class="text-blue-500 underline"
             >Delete</a
           >
-          <a
-            th:href="@{/cart/sortUp} + '?username=' + *{username}"
-            class="text-blue-500 underline"
-            >Sort Up</a
-          >
+          <div th:if="${cartItemStat.index} > 0">
+            <a
+              th:href="@{/cart/sortUp/{cartId}(cartId=${cartItem.id})} + '?username=' + *{username}"
+              class="text-blue-500 underline"
+              >Sort Up</a
+            >
+          </div>
         </div>
       </ul>
     </div>
   </body>
 </html>
-<script></script>
+<script>
+  $("#username").focus(function () {
+    $(this).mouseleave(function () {
+      var str = $("#username").val();
+      console.log("leaving...");
+      if (str != null) location.href = "cart?username=" + str;
+      $(this).off();
+    });
+  });
+</script>

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,11 @@ public class ShoppingCartController {
     @Autowired
     CartRepository repo;
 
+    @PostConstruct
+    public void init() {
+        // TODO
+    }
+
     /**
      * Show the cart form
      * 
@@ -64,15 +71,15 @@ public class ShoppingCartController {
         logger.info("add Cart item ");
         List<String> checkDuplicatesOfItem = new ArrayList<>();
         if (cart.getUsername().equals("")) {
-            throw new IOException("Username is mandatory");
+            throw new RuntimeException("Username is mandatory");
         }
 
         if (cart.getItemName().equals("")) {
-            throw new IOException("Item name is mandatory");
+            throw new RuntimeException("Item name is mandatory");
         }
 
         if (cart.getPrice().equals("")) {
-            throw new IOException("Price is mandatory");
+            throw new RuntimeException("Price is mandatory");
         }
         repo.setUsername(cart.getUsername());
         repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
@@ -82,12 +89,9 @@ public class ShoppingCartController {
             checkDuplicatesOfItem.add(cartItem.getDesc());
         }
 
-        logger.info("currentItemLst size: " + (currentItemLst.size()));
         if (currentItemLst.size() > 0) {
             int index = 0;
             for (CartItem cartItem : currentItemLst) {
-                logger.info("1 desc " + cartItem.getDesc());
-                logger.info("2 desc " + cart.getItemName());
                 if (cartItem.getDesc().equals(cart.getItemName())) {
                     CartItem i = new CartItem();
                     i.setDesc(cart.getItemName());
@@ -96,7 +100,6 @@ public class ShoppingCartController {
                     currentItemLst.set(index, i);
                     cart.setCartItems(currentItemLst);
                 } else {
-                    logger.info("2222 WHY HERE ! ");
                     CartItem i = new CartItem();
                     i.setDesc(cart.getItemName());
                     i.setPrice(cart.getPrice());
@@ -110,7 +113,6 @@ public class ShoppingCartController {
                 logger.info("Current index is: " + (index++));
             }
         } else {
-            logger.info("WHY HERE ! ");
             CartItem i = new CartItem();
             i.setDesc(cart.getItemName());
             i.setPrice(cart.getPrice());
@@ -126,12 +128,79 @@ public class ShoppingCartController {
         return "shoppingcart";
     }
 
+    /**
+     * Update the data file
+     * 
+     * @param cart
+     * @param model
+     * @return
+     * @throws IOException
+     */
+    @PostMapping("/update")
+    public String updateCartItem(@ModelAttribute Cart cart, Model model) throws IOException {
+        logger.info(" update cart");
+        repo.setUsername(cart.getUsername());
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        Cart c = this.repo.load();
+        int index = 0;
+        for (CartItem item : c.getCartItems()) {
+            logger.info(" item.getId() " + item.getId());
+            if (item.getId().equals(cart.getEditCartId())) {
+                item.setDesc(cart.getItemName());
+                item.setPrice(cart.getPrice());
+                c.getCartItems().set(index, item);
+            }
+            index++;
+        }
+        repo.save(c);
+        model.addAttribute("cart", c);
+        return "shoppingcart";
+    }
+
+    /**
+     * Delete cart item from the data file
+     * 
+     * @param cart
+     * @param model
+     * @param cartId
+     * @param username
+     * @return
+     */
+    @GetMapping("/sortUp/{cartId}")
+    public String sortUpCartItem(@ModelAttribute Cart cart, Model model,
+            @PathVariable String cartId,
+            @RequestParam String username) {
+        repo.setUsername(cart.getUsername());
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        Cart c = this.repo.load();
+        int index = 0;
+        for (CartItem item : c.getCartItems()) {
+            logger.info(" item.getId() " + item.getId());
+            if (item.getId().equals(cartId)) {
+                CartItem aboveCartItem = c.getCartItems().get(index - 1);
+                c.getCartItems().set(index - 1, item);
+                c.getCartItems().set(index, aboveCartItem);
+            }
+            index++;
+        }
+        repo.save(c);
+        model.addAttribute("cart", c);
+        return "shoppingcart";
+    }
+
+    /**
+     * Delete cart item from the data file
+     * 
+     * @param cart
+     * @param model
+     * @param cartId
+     * @param username
+     * @return
+     */
     @GetMapping("/delete/{cartId}")
     public String deleteCartItem(@ModelAttribute Cart cart, Model model,
             @PathVariable String cartId,
             @RequestParam String username) {
-        logger.info("delete cart item : " + cartId);
-        logger.info("delete cart item : " + username);
         repo.setUsername(cart.getUsername());
         repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
         Cart c = this.repo.load();
@@ -141,6 +210,46 @@ public class ShoppingCartController {
         return "shoppingcart";
     }
 
+    /**
+     * show edit info on the form of the web app
+     * 
+     * @param cart
+     * @param model
+     * @param cartId
+     * @param username
+     * @return
+     */
+    @GetMapping("/edit/{cartId}")
+    public String editCartItem(@ModelAttribute Cart cart, Model model,
+            @PathVariable String cartId,
+            @RequestParam String username) {
+        logger.info("edit cart item : " + cartId);
+        logger.info("edit cart item : " + username);
+        repo.setUsername(cart.getUsername());
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        Cart c = this.repo.load();
+        Cart editCart = new Cart(username);
+        for (CartItem item : c.getCartItems()) {
+            logger.info(" item.getId() " + item.getId());
+            if (item.getId().equals(cartId)) {
+                editCart.setItemName(item.getDesc());
+                editCart.setUsername(username);
+                editCart.setPrice(item.getPrice());
+                editCart.setEditCartId(item.getId());
+                editCart.setCartItems(c.getCartItems());
+            }
+        }
+        model.addAttribute("cart", editCart);
+        return "shoppingcart";
+    }
+
+    /**
+     * get the data dir from using nio
+     * 
+     * @param appArgs
+     * @param defaultDataDir
+     * @return
+     */
     private String getDataDir(ApplicationArguments appArgs, String defaultDataDir) {
         String dataDirResult = "";
         List<String> optValues = null;

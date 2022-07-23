@@ -21,9 +21,18 @@ public class Cart {
     private String username;
     private String itemName;
     private BigDecimal price;
+    private String editCartId;
 
     public Cart(String name) {
         this.username = name;
+    }
+
+    public String getEditCartId() {
+        return editCartId;
+    }
+
+    public void setEditCartId(String editCartId) {
+        this.editCartId = editCartId;
     }
 
     public BigDecimal getPrice() {
