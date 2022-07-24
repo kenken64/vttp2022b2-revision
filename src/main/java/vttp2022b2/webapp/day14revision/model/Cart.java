@@ -103,19 +103,6 @@ public class Cart {
         isr.close();
     }
 
-    public void save(OutputStream os) throws IOException {
-        OutputStreamWriter ows = new OutputStreamWriter(os);
-        BufferedWriter bw = new BufferedWriter(ows);
-        for (CartItem item : cartItems)
-            bw.write(item.getDesc() + "\n" + CART_ITEM_DELIM + item.getQuantity()
-                    + CART_ITEM_DELIM + item.getPrice());
-
-        ows.flush();
-        bw.flush();
-        bw.close();
-        ows.close();
-    }
-
     public CopyOnWriteArrayList<CartItem> getCartItems() {
         return cartItems;
     }

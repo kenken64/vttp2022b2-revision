@@ -82,27 +82,6 @@ public class CartRepository {
         this.save(c, false);
     }
 
-    public void load(InputStream is) throws IOException {
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-        String itemStr;
-        while ((itemStr = br.readLine()) != null) {
-            if (itemStr != null) {
-                logger.info(itemStr);
-                String[] itemStrArr = itemStr.split(",");
-                CartItem i = new CartItem();
-                i.setDesc(itemStrArr[0]);
-                i.setQuantity(Integer.parseInt(itemStrArr[1]));
-                i.setPrice(new BigDecimal(itemStrArr[2]));
-                i.setId(itemStrArr[3]);
-                contents.add(i);
-            }
-        }
-
-        br.close();
-        isr.close();
-    }
-
     public synchronized Cart load() {
         String cartName = this.username + ".cart";
         Cart cart = new Cart(this.username);
