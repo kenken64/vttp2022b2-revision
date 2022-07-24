@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,11 +50,21 @@ public class ShoppingCartController {
      */
     @GetMapping
     public String showAllCart(Model model, @RequestParam String username) {
-        repo.setUsername(username);
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(username);
         Cart currCart = repo.load();
         model.addAttribute("cart", currCart);
         return "shoppingcart";
+    }
+
+    /**
+     * setup the repo component that use to store the data of the shopping cart
+     * items
+     * 
+     * @param username
+     */
+    private void setupRepo(String username) {
+        repo.setUsername(username);
+        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
     }
 
     /**
@@ -70,28 +79,34 @@ public class ShoppingCartController {
     public String addCartItem(@ModelAttribute Cart cart, Model model) throws IOException {
         logger.info("add Cart item ");
         List<String> checkDuplicatesOfItem = new ArrayList<>();
-        if (cart.getUsername().equals("")) {
+
+        // validate all three fields from the form must be mandatory
+        if ("".equals(cart.getUsername())) {
             throw new RuntimeException("Username is mandatory");
         }
 
-        if (cart.getItemName().equals("")) {
+        if ("".equals(cart.getItemName())) {
             throw new RuntimeException("Item name is mandatory");
         }
 
-        if (cart.getPrice().equals("")) {
+        if ("".equals(cart.getPrice().toPlainString())) {
             throw new RuntimeException("Price is mandatory");
         }
-        repo.setUsername(cart.getUsername());
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(cart.getUsername());
+        // get the list of car items from the data file
         Cart currCart = repo.load();
         CopyOnWriteArrayList<CartItem> currentItemLst = currCart.getCartItems();
+        // dump all the cart items into a temp list for duplicate
+        // checking
         for (CartItem cartItem : currentItemLst) {
             checkDuplicatesOfItem.add(cartItem.getDesc());
         }
 
+        // chck if the current cart items must be more than 0
         if (currentItemLst.size() > 0) {
             int index = 0;
             for (CartItem cartItem : currentItemLst) {
+                // increase quantity if the product item already exist in the data file
                 if (cartItem.getDesc().equals(cart.getItemName())) {
                     CartItem i = new CartItem();
                     i.setDesc(cart.getItemName());
@@ -100,12 +115,16 @@ public class ShoppingCartController {
                     currentItemLst.set(index, i);
                     cart.setCartItems(currentItemLst);
                 } else {
-                    CartItem i = new CartItem();
-                    i.setDesc(cart.getItemName());
-                    i.setPrice(cart.getPrice());
-                    i.setQuantity(1);
+                    // if the product does exist in the data file
+                    // check if previously the product already added before
+                    // if not then add new item
                     if (!checkDuplicatesOfItem.contains(cart.getItemName())) {
+                        CartItem i = new CartItem();
+                        i.setDesc(cart.getItemName());
+                        i.setPrice(cart.getPrice());
+                        i.setQuantity(1);
                         currentItemLst.add(i);
+                        // add the newly added record the duplicate list
                         checkDuplicatesOfItem.add(cart.getItemName());
                         cart.setCartItems(currentItemLst);
                     }
@@ -113,6 +132,7 @@ public class ShoppingCartController {
                 logger.info("Current index is: " + (index++));
             }
         } else {
+            // first time add into the data file
             CartItem i = new CartItem();
             i.setDesc(cart.getItemName());
             i.setPrice(cart.getPrice());
@@ -139,8 +159,7 @@ public class ShoppingCartController {
     @PostMapping("/update")
     public String updateCartItem(@ModelAttribute Cart cart, Model model) throws IOException {
         logger.info(" update cart");
-        repo.setUsername(cart.getUsername());
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(cart.getUsername());
         Cart c = this.repo.load();
         int index = 0;
         for (CartItem item : c.getCartItems()) {
@@ -170,13 +189,14 @@ public class ShoppingCartController {
     public String sortUpCartItem(@ModelAttribute Cart cart, Model model,
             @PathVariable String cartId,
             @RequestParam String username) {
-        repo.setUsername(cart.getUsername());
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(cart.getUsername());
         Cart c = this.repo.load();
         int index = 0;
         for (CartItem item : c.getCartItems()) {
             logger.info(" item.getId() " + item.getId());
             if (item.getId().equals(cartId)) {
+
+                // move the current item to the above item index
                 CartItem aboveCartItem = c.getCartItems().get(index - 1);
                 c.getCartItems().set(index - 1, item);
                 c.getCartItems().set(index, aboveCartItem);
@@ -201,9 +221,9 @@ public class ShoppingCartController {
     public String deleteCartItem(@ModelAttribute Cart cart, Model model,
             @PathVariable String cartId,
             @RequestParam String username) {
-        repo.setUsername(cart.getUsername());
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(cart.getUsername());
         Cart c = this.repo.load();
+        // remove from the data file
         this.repo.delete(cartId, c);
         Cart newCart = repo.load();
         model.addAttribute("cart", newCart);
@@ -225,8 +245,7 @@ public class ShoppingCartController {
             @RequestParam String username) {
         logger.info("edit cart item : " + cartId);
         logger.info("edit cart item : " + username);
-        repo.setUsername(cart.getUsername());
-        repo.setFileRepository(new File(getDataDir(appArgs, "/tmp/data")));
+        setupRepo(cart.getUsername());
         Cart c = this.repo.load();
         Cart editCart = new Cart(username);
         for (CartItem item : c.getCartItems()) {
